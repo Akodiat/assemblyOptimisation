@@ -70,6 +70,7 @@ data_output_1 = {
       only_last = false
       print_every = 100000
       col_1 = {
+            id = my_patchy_bonds
             type = PatchyBonds
             print_bonds = true
       }
