@@ -1,11 +1,33 @@
 import neat
 import oxpy
+import networkx as nx
 
-maxStep = 1e6
+maxStep = 1e7
 tempDivisions = 10
 
 maxTemp = 0.1
 minTemp = 0.005
+
+def getConnectionGraph(bonds):
+    lines = bonds.splitlines()
+    [step, nParticles] = [int(v) for v in lines[0].split()]
+    print("Step {}, using {} particles".format(step, nParticles))
+    particleLines = lines[1::]
+    G = nx.Graph()
+    for i in range(nParticles):
+        bondBools = particleLines[i*2].strip().split(' ')
+        unbound = 0
+        for j, patch in enumerate(bondBools):
+            if int(patch) == 1:
+                bondParticles = particleLines[i*2 + 1].strip().split(' ')
+                G.add_edge(
+                    i+1,
+                    int(bondParticles[j-unbound]),
+                    patch=j
+                )
+            else:
+                unbound += 1
+    return G
 
 def annealingOxDNA(inputPath, stepsPerTemp, temps):
     with oxpy.Context():
@@ -19,12 +41,14 @@ def annealingOxDNA(inputPath, stepsPerTemp, temps):
             manager.update_temperature(temp)
             manager.run(stepsPerTemp)
 
-        # Need something clever here...
         bondsObs = manager.config_info().get_observable_by_id("my_patchy_bonds")
         bonds = bondsObs.get_output_string(manager.current_step)
 
-        nBonds = sum(int(i) for v in bonds.splitlines()[1::2] for i in v.split())
-        fitness = nBonds
+        G = getConnectionGraph(bonds)
+        connectedParticles = len(max(nx.connected_components(G), key=len))
+
+        fitness = connectedParticles
+
         print("Fitness: {}".format(fitness))
 
         return fitness
