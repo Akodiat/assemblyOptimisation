@@ -51,13 +51,13 @@ topology = LORO.lorenzo.topology.top
 conf_file = init_conf.dat
 trajectory_file = trajectory.dat
 refresh_vel = true
-#log_file = log.dat
-no_stdout_energy = 0
+log_file = log.dat
+no_stdout_energy = 1
 restart_step_counter = true
 energy_file = energy.dat
 print_conf_interval = 1e7
 #print_conf_ppc = 51
-print_energy_every = 1e5
+print_energy_every = 1e9
 time_scale = linear
 
 #external_forces = true

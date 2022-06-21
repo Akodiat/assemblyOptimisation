@@ -2,6 +2,7 @@
 bonds.dat
 energy.dat
 trajectory.dat
+log.dat
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
