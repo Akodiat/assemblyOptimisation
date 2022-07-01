@@ -27,13 +27,14 @@ class MultiGenome(Genome):
             g.mutate()
 
 class ArrayGenome(Genome):
-    def __init__(self, values, mutationRate = 1):
+    def __init__(self, values, mutationRate = 1, minVal=None):
         super().__init__()
         self.values = values
         self.mutationRate = mutationRate
+        self.minVal = minVal
 
     def clone(self):
-        other = ArrayGenome(self.values[:], self.mutationRate)
+        other = ArrayGenome(self.values[:], self.mutationRate, self.minVal)
         other.age = self.age + 1
         return other
 
@@ -42,6 +43,8 @@ class ArrayGenome(Genome):
             for _ in range(max(self.mutationRate, 1)):
                 i = random.randrange(len(self.values))
                 self.values[i] += random.gauss(0, 0.5)
+                if self.minVal is not None:
+                    self.values[i] = max(0, self.values[i])
 
 def sigmoid(x):
     return 1/(1 + np.exp(-x))
@@ -259,7 +262,7 @@ if __name__ == "__main__":
     nVals = 10
     print([g.evaluate([i/nVals]) for i in range(nVals)])
 
-    g2 = ArrayGenome([1,1,1,1,1])
+    g2 = ArrayGenome([1,1,1,1,1], minVal=0)
     for i in range(50):
         g2.mutate()
         print(g2.values, g2.age)

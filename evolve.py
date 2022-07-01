@@ -6,7 +6,10 @@ import random
 
 class PatchySimGenome(MultiGenome):
     def __init__(self, nInteractions, maxTemp, minTemp):
-        self.strengthsGenome = ArrayGenome([random.random() for _ in range(nInteractions)])
+        self.strengthsGenome = ArrayGenome(
+            [random.random() for _ in range(nInteractions)],
+            minVal=0
+        )
         self.tempGenome = NeatGenome(1,1, mutationWeights=[
             10, # Mutate connection weight,
             3,  # Remove connection,
@@ -35,7 +38,7 @@ class PatchySimGenome(MultiGenome):
     def getStrengths(self):
         return self.strengthsGenome.values
 
-maxStep = 1e6
+maxStep = 1e5
 tempDivisions = 10
 maxTemp = 0.1
 minTemp = 0.005

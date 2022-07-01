@@ -5,7 +5,7 @@ backend = CPU
 CUDA_list = verlet
 #backend_precision = double
 #debug = 1
-seed = 4982
+#seed = 4982
 
 DPS_KF_cosmax = 0.7
 DPS_KF_delta = 0.2
