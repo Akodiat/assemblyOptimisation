@@ -1,7 +1,10 @@
 
 import math
+from multiprocessing.dummy import Array
+from optparse import Values
 import random
 import networkx as nx
+import numpy as np
 
 class Genome:
     def __init__(self):
@@ -48,9 +51,30 @@ class ArrayGenome(Genome):
                     self.values[i] = max(0, self.values[i])
 
 
+class PolynomialGenome(ArrayGenome):
+    # a(x - e)^3 + b(x - e)^2 + c(x - e) + d
+    def __init__(self, mutationRate=1, minVal=None):
+        values = [random.gauss(0, 1) for _ in range(5)]
+        super().__init__(values, mutationRate, minVal)
+
+    def evaluate(self, x):
+        [a,b,c,d,e] = self.values
+        return a*(x - e)**3 + b*(x - e)**2 + c*(x - e) + d
+
+    def clone(self):
+        other = PolynomialGenome(self.mutationRate, self.minVal)
+        other.values = self.values[:]
+        other.age = self.age + 1
+        return other
+
+    def __str__(self) -> str:
+        [a,b,c,d,e] = self.values
+        return f'{a}(x - {e})^3 + {b}(x - {e})^2 + {c}(x - {e}) + {d}'
+
+
 # Activation functions:
 
-fActs = ['lin', 'sigm', 'log', 'tanh', 'relu']
+fActs = ['lin', 'sigm', 'log', 'tanh', 'relu', 'sq']
 def activate(x, fAct='lin'):
     if fAct == 'lin': # Linear
         return x
@@ -62,6 +86,8 @@ def activate(x, fAct='lin'):
         return math.sin(x)
     elif fAct == 'tanh':
         return math.tanh(x)
+    elif fAct == 'sq':
+        return x**2
     elif fAct == 'relu':
         return x if x>0 else 0
 
@@ -118,6 +144,7 @@ class NeatBiasNode(NeatInputNode):
     def __init__(self):
         self.prefix = 'b'
         self.val = 1
+        self.fAct = 'lin'
         return
     def getValue(self, passedNodes=[]):
         return 1
@@ -135,7 +162,7 @@ class NeatGenome(Genome):
         self.hidden = []
         self.outputs = [NeatOutputNode(
             # Make fully connected
-            inputs=[{'weight': 1.0, 'node': node} for node in self.inputs] #[*self.inputs, self.bias]]
+            inputs=[{'weight': random.uniform(-1,1), 'node': node} for node in [*self.inputs, self.bias]]
         ) for i in range(nOutputs)]
         self.mutationWeights = mutationWeights
         self.mutationRate = mutationRate
@@ -184,6 +211,16 @@ class NeatGenome(Genome):
 
     def getGraph(self):
         G = nx.Graph()
+        for n in [*self.inputs, self.bias]:
+            G.add_node(self.labelNode(n), layer=0, fAct=n.fAct)
+        hiddenDivs = int(np.sqrt(len(self.hidden)))
+        for n in self.hidden:
+            G.add_node(self.labelNode(n), layer=1+random.choice(
+                # Distribute nodes a bit
+                range(hiddenDivs)
+            ), fAct=n.fAct)
+        for n in self.outputs:
+            G.add_node(self.labelNode(n), layer=hiddenDivs+1, fAct=n.fAct)
         for c in self.allConnections():
             G.add_edge(
                 self.labelNode(c['input']['node']), 
@@ -193,10 +230,10 @@ class NeatGenome(Genome):
         return G
 
     def draw(self):
-        nx.draw_networkx(
-            self.getGraph(),
-            arrows=True
-        )
+        G = self.getGraph()
+        pos = nx.multipartite_layout(G, subset_key="layer",)
+
+        nx.draw_networkx(G, pos, arrows=True)
 
     def allConnections(self):
         return ({
@@ -269,6 +306,7 @@ class NeatGenome(Genome):
             inputs = [c['input']], # Keep same weight
             fAct = random.choice(fActs) # Random activation function
         )
+        # Replace connection
         i = c['output'].inputs.index(c['input'])
         c['output'].inputs[i] = {
             'weight': 1.0, # Use unit weight on second connection
@@ -296,6 +334,8 @@ class NeatGenome(Genome):
     def evaluate2(self, inputVals, nSteps=100):
         for i, v in enumerate(inputVals):
             self.inputs[i].setValue(v)
+        for node in [*self.hidden, *self.outputs]:
+            node.val = 0
         for i in range(nSteps):
             for node in [*self.hidden, *self.outputs]:
                 node.updateValFromInput()
