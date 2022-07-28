@@ -3,6 +3,7 @@ import networkx as nx
 from genome import MultiGenome, ArrayGenome, PolynomialGenome
 from geneticAlgoritm import GeneticAlgorithm
 import random
+import pickle
 
 class PatchySimGenome(MultiGenome):
     def __init__(self, nInteractions, initialTempGuess=None):
@@ -134,6 +135,11 @@ def run():
 
     # Evolve for a given number of generations
     evolver.run(nGenerations, onGenerationStep)
+
+    # Save data
+    with open('genomeLog.pickle', 'wb') as f:
+        pickle.dump(genomeLog, f)
+
 
 def countInteractionStrengths(templatePath):
     with open(templatePath) as f:
