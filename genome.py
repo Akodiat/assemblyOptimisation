@@ -31,11 +31,12 @@ class MultiGenome(Genome):
             g.mutate()
 
 class ArrayGenome(Genome):
-    def __init__(self, values, mutationRate = 1, minVal=None):
+    def __init__(self, values, mutationRate = 1, minVal=None, mutationDeviation = 0.5):
         super().__init__()
         self.values = values
         self.mutationRate = mutationRate
         self.minVal = minVal
+        self.mutationDeviation = mutationDeviation
 
     def clone(self):
         other = ArrayGenome(self.values[:], self.mutationRate, self.minVal)
@@ -46,16 +47,19 @@ class ArrayGenome(Genome):
         if random.random() < self.mutationRate:
             for _ in range(max(self.mutationRate, 1)):
                 i = random.randrange(len(self.values))
-                self.values[i] += random.gauss(0, 0.5)
+                self.values[i] += random.gauss(0, self.mutationDeviation)
                 if self.minVal is not None:
                     self.values[i] = max(0, self.values[i])
+
+    def __str__(self) -> str:
+        return str(self.values)
 
 
 class PolynomialGenome(ArrayGenome):
     # a(x - e)^3 + b(x - e)^2 + c(x - e) + d
-    def __init__(self, mutationRate=1, minVal=None):
+    def __init__(self, mutationRate=1, minVal=None, mutationDeviation = 0.01):
         values = [random.gauss(0, 1) for _ in range(5)]
-        super().__init__(values, mutationRate, minVal)
+        super().__init__(values, mutationRate, minVal, mutationDeviation)
 
     def evaluate(self, x):
         [a,b,c,d,e] = self.values

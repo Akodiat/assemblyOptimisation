@@ -31,8 +31,9 @@ class GeneticAlgorithm:
 
         return maxFitness, best
 
-    def run(self, nGenerations):
+    def run(self, nGenerations, onGenerationStep=None):
         for gen in range(nGenerations):
             maxFitness, best = self.stepGeneration()
-            print("Generation {}\n  Max fitness: {}\n  Best genome: {}".format(gen, maxFitness, best))
+            if onGenerationStep is not None:
+                onGenerationStep(gen, maxFitness, best)
         return maxFitness, best
