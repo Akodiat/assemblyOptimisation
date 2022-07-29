@@ -9,7 +9,7 @@ class PatchySimGenome(MultiGenome):
     def __init__(self, nInteractions, initialTempGuess=None):
         self.strengthsGenome = ArrayGenome(
             [1 for _ in range(nInteractions)],
-            minVal=0,
+            minVal=0, maxVal=1
         )
         self.tempGenome = PolynomialGenome(mutationDeviation=0.01)
         if initialTempGuess:
