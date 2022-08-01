@@ -1,8 +1,11 @@
 # oxDNA output files
+simulations/
 bonds.dat
 energy.dat
 trajectory.dat
 log.dat
+
+*.pickle
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

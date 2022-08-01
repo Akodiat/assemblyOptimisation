@@ -8,11 +8,7 @@ class GeneticAlgorithm:
 
     def stepGeneration(self):
         fitnesses = [self.fitnessFunc(i) for i in self.population]
-
-        #print("Fitnesses: {}".format(fitnesses))
-
         maxFitness = max(fitnesses)
-
         best = self.population[fitnesses.index(maxFitness)]
 
         if self.fitnessTarget and maxFitness >= self.fitnessTarget:

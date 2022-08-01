@@ -1,9 +1,12 @@
+import sys
 import oxpy
 import networkx as nx
 from genome import MultiGenome, ArrayGenome, PolynomialGenome
 from geneticAlgoritm import GeneticAlgorithm
 import random
 import pickle
+import os
+from distutils.dir_util import copy_tree, remove_tree
 
 class PatchySimGenome(MultiGenome):
     def __init__(self, nInteractions, initialTempGuess=None):
@@ -39,14 +42,6 @@ class PatchySimGenome(MultiGenome):
     def __str__(self) -> str:
         return f"Temperature function: {self.tempGenome}\nStrengths: {self.strengthsGenome}"
 
-maxStep = 1e6
-tempDivisions = 10
-maxTemp = 0.1
-minTemp = 0.005
-nInteractions = 10
-populationSize = 5
-nGenerations = 100
-
 def getConnectionGraph(bonds):
     lines = bonds.splitlines()
     [step, nParticles] = [int(v) for v in lines[0].split()]
@@ -68,10 +63,10 @@ def getConnectionGraph(bonds):
                 unbound += 1
     return G
 
-def annealingOxDNA(inputPath, stepsPerTemp, temps):
+def annealingOxDNA(stepsPerTemp, temps, targetClusterSize):
     with oxpy.Context():
         # init the manager with the given input file
-        manager = oxpy.OxpyManager(inputPath)
+        manager = oxpy.OxpyManager('input')
         manager.load_options()
         manager.init()
 
@@ -89,26 +84,14 @@ def annealingOxDNA(inputPath, stepsPerTemp, temps):
         except:
             connectedParticles = 0
 
-        fitness = connectedParticles
+        if connectedParticles == targetClusterSize:
+            fitness = float('inf')
+        else:
+            fitness = 1/abs(connectedParticles-targetClusterSize)
 
-        print("Fitness: {}".format(fitness), flush=True)
+        print("Fitness: {} (largest cluster is {})".format(fitness, connectedParticles), flush=True)
 
         return fitness
-
-def fitnessFunc(genome):
-    temps = genome.getTemperatures(tempDivisions)
-    print("\nNetwork {}\n\ttemps = {}\n\tstrengths = {}".format(
-        genome.tempGenome,
-        ', '.join('{:.3f}'.format(v) for v in temps),
-        ', '.join('{:.3f}'.format(v) for v in genome.getStrengths())
-    ), flush=True)
-
-    setInteractionStrengths(genome, 'LORO.interaction_matrix.template.txt')
-    return annealingOxDNA(
-        "input",
-        int(maxStep/tempDivisions),
-        temps
-    )
 
 genomeLog = []
 def onGenerationStep(generation, maxFitness, bestGenome):
@@ -120,8 +103,51 @@ def onGenerationStep(generation, maxFitness, bestGenome):
     print("\nGeneration {}\n  Max fitness: {}\n  Best genome: {}\n".format(
         generation, maxFitness, bestGenome))
 
-def run():
-    nInteractions = countInteractionStrengths('LORO.interaction_matrix.template.txt')
+def run(
+    systemName,
+    maxStep = 1e6,
+    tempDivisions = 10,
+    nInteractions = 10,
+    populationSize = 10,
+    nGenerations = 100,
+    targetClusterSize = 60
+):
+    nInteractions = countInteractionStrengths(os.path.join(
+        'templates',
+        systemName,
+        'LORO.interaction_matrix.template.txt'
+    ))
+
+    # Define fitness function
+    def fitnessFunc(genome):
+        temps = genome.getTemperatures(tempDivisions)
+        print("\nNetwork {}\n\ttemps = {}\n\tstrengths = {}".format(
+            genome.tempGenome,
+            ', '.join('{:.3f}'.format(v) for v in temps),
+            ', '.join('{:.3f}'.format(v) for v in genome.getStrengths())
+        ), flush=True)
+
+        templateDir = os.path.join('templates', systemName)
+        simDir = os.path.join(
+            'simulations',
+            f"{systemName}_{genome.__hash__()}")
+        copy_tree(templateDir, simDir)
+
+        setInteractionStrengths(genome,
+            os.path.join(templateDir, 'LORO.interaction_matrix.template.txt'),
+            os.path.join(simDir,'LORO.interaction_matrix.txt')
+        )
+
+        currentDir = os.getcwd()
+        os.chdir(simDir)
+        fitness = annealingOxDNA(
+            int(maxStep/tempDivisions),
+            temps,
+            targetClusterSize
+        )
+        os.chdir(currentDir)
+        remove_tree(simDir)
+        return fitness
 
     # Initialize population with random constant temperature protocols
     population = [PatchySimGenome(nInteractions, random.uniform(0.01,0.1)) for _ in range(populationSize)]
@@ -146,11 +172,15 @@ def countInteractionStrengths(templatePath):
         ls = f.readlines()
     return len(ls)
 
-def setInteractionStrengths(genome, templatePath, outPath='LORO.interaction_matrix.txt'):
+def setInteractionStrengths(genome, templatePath, outPath):
     with open(templatePath) as f:
         s = f.read()
     with open(outPath, 'w') as f:
         f.write(s.format(*genome.getStrengths()))
 
 if __name__ == "__main__":
-    run()
+    if len(sys.argv) < 0:
+        systemName = sys.argv[0]
+    else:
+        systemName = 'shell'
+    run(systemName)

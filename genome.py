@@ -40,7 +40,13 @@ class ArrayGenome(Genome):
         self.mutationDeviation = mutationDeviation
 
     def clone(self):
-        other = ArrayGenome(self.values[:], self.mutationRate, self.minVal)
+        other = ArrayGenome(
+            self.values[:],
+            self.mutationRate,
+            self.minVal,
+            self.maxVal,
+            self.mutationDeviation
+        )
         other.age = self.age + 1
         return other
 
@@ -62,14 +68,14 @@ class PolynomialGenome(ArrayGenome):
     # a(x - e)^3 + b(x - e)^2 + c(x - e) + d
     def __init__(self, mutationRate=1, mutationDeviation = 0.01):
         values = [random.gauss(0, 1) for _ in range(5)]
-        super().__init__(values, mutationRate, minVal=None, maxVal=None, mutationDeviation)
+        super().__init__(values, mutationRate, minVal=None, maxVal=None, mutationDeviation=mutationDeviation)
 
     def evaluate(self, x):
         [a,b,c,d,e] = self.values
         return a*(x - e)**3 + b*(x - e)**2 + c*(x - e) + d
 
     def clone(self):
-        other = PolynomialGenome(self.mutationRate, self.minVal)
+        other = PolynomialGenome(self.mutationRate, self.mutationDeviation)
         other.values = self.values[:]
         other.age = self.age + 1
         return other
