@@ -1,8 +1,8 @@
 import sys
 import oxpy
 import networkx as nx
-from genome import MultiGenome, ArrayGenome, PolynomialGenome
-from geneticAlgoritm import GeneticAlgorithm
+from gapy.genome import MultiGenome, ArrayGenome, PolynomialGenome
+from gapy.geneticAlgoritm import GeneticAlgorithm
 import random
 import pickle
 import os

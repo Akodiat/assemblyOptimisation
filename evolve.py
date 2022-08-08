@@ -1,7 +1,8 @@
 import oxpy
 import networkx as nx
-from genome import MultiGenome, ArrayGenome, NeatGenome
-from geneticAlgoritm import GeneticAlgorithm
+from gapy.genome import MultiGenome, ArrayGenome
+from gapy.neatGenome import NeatGenome
+from gapy.geneticAlgoritm import GeneticAlgorithm
 import random
 
 class PatchySimGenome(MultiGenome):
@@ -12,7 +13,7 @@ class PatchySimGenome(MultiGenome):
         )
         self.tempGenome = NeatGenome(1,1, mutationWeights=[
             10, # Mutate connection weight,
-            3,  # Remove connection,
+            3,  # Remove connection,NeatGenome
             2,  # Add connection,
             3   # Add node
         ])

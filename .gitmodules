@@ -1,0 +1,3 @@
+[submodule "gapy"]
+	path = gapy
+	url = git@github.com:Akodiat/gapy.git
