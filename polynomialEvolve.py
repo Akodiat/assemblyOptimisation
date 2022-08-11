@@ -105,7 +105,7 @@ def onGenerationStep(generation, maxFitness, bestGenome):
 
 def run(
     systemName,
-    maxStep = 1e6,
+    maxStep = 1e7,
     tempDivisions = 10,
     nInteractions = 10,
     populationSize = 10,
@@ -178,9 +178,23 @@ def setInteractionStrengths(genome, templatePath, outPath):
     with open(outPath, 'w') as f:
         f.write(s.format(*genome.getStrengths()))
 
+import argparse
 if __name__ == "__main__":
-    if len(sys.argv) < 0:
-        systemName = sys.argv[0]
-    else:
-        systemName = 'shell'
-    run(systemName)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("systemName")
+    parser.add_argument("targetClusterSize")
+    parser.add_argument("nInteractions")
+    parser.add_argument("--maxStep", default=1e7)
+    parser.add_argument("--tempDivisions", default=10)
+    parser.add_argument("--populationSize", default=100)
+    parser.add_argument("--nGenerations", default=100)
+    args = parser.parse_args()
+    run(
+        args.systemName,
+        maxStep = args.maxStep,
+        tempDivisions = args.tempDivisions,
+        nInteractions = args.nInteractions,
+        populationSize = args.populationSize,
+        nGenerations = args.nGenerations,
+        targetClusterSize = args.targetClusterSize
+    )
