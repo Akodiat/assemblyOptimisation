@@ -191,10 +191,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     run(
         args.systemName,
-        maxStep = args.maxStep,
-        tempDivisions = args.tempDivisions,
-        nInteractions = args.nInteractions,
-        populationSize = args.populationSize,
-        nGenerations = args.nGenerations,
-        targetClusterSize = args.targetClusterSize
+        maxStep = int(args.maxStep),
+        tempDivisions = int(args.tempDivisions),
+        nInteractions = int(args.nInteractions),
+        populationSize = int(args.populationSize),
+        nGenerations = int(args.nGenerations),
+        targetClusterSize = int(args.targetClusterSize)
     )

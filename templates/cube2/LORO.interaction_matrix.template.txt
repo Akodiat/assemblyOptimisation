@@ -1,0 +1,6 @@
+patchy_eps[0][3] = {}
+patchy_eps[1][4] = {}
+patchy_eps[2][5] = {}
+patchy_eps[3][0] = {}
+patchy_eps[4][1] = {}
+patchy_eps[5][2] = {}
