@@ -1,7 +1,7 @@
 ##############################
 ####  PROGRAM PARAMETERS  ####
 ##############################
-backend = CPU
+backend = CUDA
 CUDA_list = verlet
 backend_precision = mixed
 #debug = 1

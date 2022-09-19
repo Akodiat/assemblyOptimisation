@@ -7,6 +7,7 @@ import random
 import pickle
 import os
 from distutils.dir_util import copy_tree, remove_tree
+import time
 
 class PatchySimGenome(MultiGenome):
     def __init__(self, nInteractions, initialTempGuess=None):
@@ -110,7 +111,8 @@ def run(
     nInteractions = 10,
     populationSize = 10,
     nGenerations = 100,
-    targetClusterSize = 60
+    targetClusterSize = 60,
+    nProcesses = 8
 ):
     nInteractions = countInteractionStrengths(os.path.join(
         'templates',
@@ -120,6 +122,8 @@ def run(
 
     # Define fitness function
     def fitnessFunc(genome):
+        if nProcesses > 1:
+            time.sleep(random.random()*nProcesses)
         temps = genome.getTemperatures(tempDivisions)
         print("\nNetwork {}\n\ttemps = {}\n\tstrengths = {}".format(
             genome.tempGenome,
@@ -160,7 +164,7 @@ def run(
     evolver = GeneticAlgorithm(population, fitnessFunc)
 
     # Evolve for a given number of generations
-    evolver.run(nGenerations, onGenerationStep)
+    evolver.run(nGenerations, onGenerationStep, nProcesses=nProcesses)
 
     # Save data
     with open('genomeLog.pickle', 'wb') as f:

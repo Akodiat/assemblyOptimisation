@@ -134,12 +134,11 @@ def onGenerationStep(generation, maxFitness, bestGenome):
 
 def run(
     systemName,
-    maxStep = 1e5,
+    maxStep = 1e7,
     tempDivisions = 10,
-    nInteractions = 10,
-    populationSize = 10,
-    nGenerations = 100,
-    targetClusterSize = 60
+    nInteractions = 4,
+    populationSize = 8,
+    nGenerations = 1000,
 ):
     nInteractions = countInteractionStrengths(os.path.join(
         'templates',
@@ -189,7 +188,7 @@ def run(
     evolver = GeneticAlgorithm(population, fitnessFunc)
 
     # Evolve for a given number of generations
-    evolver.run(nGenerations, onGenerationStep, nProcesses=4)
+    evolver.run(nGenerations, onGenerationStep, nProcesses=8)
 
     # Save data
     with open('genomeLog.pickle', 'wb') as f:
