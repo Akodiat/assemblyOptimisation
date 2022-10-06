@@ -8,6 +8,7 @@ import pickle
 import os
 from distutils.dir_util import copy_tree, remove_tree
 import time
+from multiprocess import Condition
 
 class PatchySimGenome(MultiGenome):
     def __init__(self, nInteractions, initialTempGuess=None):
@@ -108,11 +109,10 @@ def run(
     systemName,
     maxStep = 1e7,
     tempDivisions = 10,
-    nInteractions = 10,
     populationSize = 10,
     nGenerations = 100,
     targetClusterSize = 60,
-    nProcesses = 8
+    nProcesses = 4
 ):
     nInteractions = countInteractionStrengths(os.path.join(
         'templates',
@@ -130,6 +130,9 @@ def run(
             ', '.join('{:.3f}'.format(v) for v in temps),
             ', '.join('{:.3f}'.format(v) for v in genome.getStrengths())
         ), flush=True)
+
+        c = Condition()
+        c.acquire()
 
         templateDir = os.path.join('templates', systemName)
         simDir = os.path.join(
@@ -151,6 +154,8 @@ def run(
         )
         os.chdir(currentDir)
         remove_tree(simDir)
+
+        c.release()
         return fitness
 
     # Initialize population with random constant temperature protocols
@@ -186,19 +191,17 @@ import argparse
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("systemName")
-    parser.add_argument("targetClusterSize")
-    parser.add_argument("nInteractions")
-    parser.add_argument("--maxStep", default=1e7)
-    parser.add_argument("--tempDivisions", default=10)
-    parser.add_argument("--populationSize", default=100)
-    parser.add_argument("--nGenerations", default=100)
+    parser.add_argument("targetClusterSize", type=int)
+    parser.add_argument("--maxStep", default=1e7, type=float)
+    parser.add_argument("--tempDivisions", default=10, type=int)
+    parser.add_argument("--populationSize", default=100, type=int)
+    parser.add_argument("--nGenerations", default=100, type=int)
     args = parser.parse_args()
     run(
         args.systemName,
-        maxStep = int(args.maxStep),
-        tempDivisions = int(args.tempDivisions),
-        nInteractions = int(args.nInteractions),
-        populationSize = int(args.populationSize),
-        nGenerations = int(args.nGenerations),
-        targetClusterSize = int(args.targetClusterSize)
+        maxStep = args.maxStep,
+        tempDivisions = args.tempDivisions,
+        populationSize = args.populationSize,
+        nGenerations = args.nGenerations,
+        targetClusterSize = args.targetClusterSize
     )
