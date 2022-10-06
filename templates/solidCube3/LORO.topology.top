@@ -1,0 +1,5 @@
+108 4
+4 6 0,1,2,3,4,5 s0.patchspec
+24 5 6,7,8,9,10 s1.patchspec
+48 4 11,12,13,14 s2.patchspec
+32 3 15,16,17 s3.patchspec
