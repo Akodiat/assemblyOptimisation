@@ -103,13 +103,13 @@ def onGenerationStep(generation, maxFitness, bestGenome):
         'genome': bestGenome
     })
     print("\nGeneration {}\n  Max fitness: {}\n  Best genome: {}\n".format(
-        generation, maxFitness, bestGenome))
+        generation, maxFitness, bestGenome), flush=True)
 
 def run(
     systemName,
     maxStep = 1e7,
     tempDivisions = 10,
-    populationSize = 10,
+    populationSize = 100,
     nGenerations = 100,
     targetClusterSize = 60,
     nProcesses = 4
@@ -153,7 +153,7 @@ def run(
             targetClusterSize
         )
         os.chdir(currentDir)
-        remove_tree(simDir)
+        #remove_tree(simDir)
 
         c.release()
         return fitness
